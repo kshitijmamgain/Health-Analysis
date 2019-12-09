@@ -8,13 +8,13 @@ Python provides powerful tools to analyze time series data. I have tried to anal
 * Summary: daily_summary, step_daily_trend
 <br>
 The schema of the project would be:
-<br>
-#### Data Preprocessing
-#### Data Trend Analysis
-i. Sleep Trends
-ii. Exercise Trends
-iii. Heart Rate Trends
-iv. Stress Trends
-v. Step Counts Trends
-#### Data Daily Analysis
-i. Preparing a daily profile of the user using - step count, heart rate and sleep data
+
+#### Data Preprocessing<br>
+#### Data Trend Analysis<br>
+i. Sleep Trends<br>
+ii. Exercise Trends<br>
+iii. Heart Rate Trends<br>
+iv. Stress Trends<br>
+v. Step Counts Trends<br>
+#### Data Daily Analysis<br>
+i. Preparing a daily profile of the user using - step count, heart rate and sleep data<br>
