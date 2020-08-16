@@ -15,8 +15,9 @@ import os
 from datetime import datetime
 from datetime import timedelta
 from datetime import date
+import tab_introduction
 #os.chdir('datasets')
-file = glob.glob('datasets\*')
+file = glob.glob(r'datasets\*')
 file_list = []
 for f in file:
     if f.endswith('.csv'):
@@ -42,7 +43,6 @@ sleep_duration = [c for c in sleep_df['sleep_duration']]
 day_nap = list(sleep_df[(sleep_df.waking_hour >= 10) &(sleep_df.waking_hour <= 19)]['sleep_duration'])
 disturbed = list(sleep_df[sleep_df.Disrupted == True]['sleep_duration']) 
 
-# Step 1. Launch the application
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -50,6 +50,43 @@ app.config['suppress_callback_exceptions'] = True
 app.scripts.config.serve_locally = True
 server = app.server
 
+app.layout = html.Div([
+    html.Div([
+        html.H1('Health Data Analysis'),
+        html.P('By: Kshitij Mamgain')],style = {'padding' : '50px' ,'backgroundColor' : '#009dc4'}),
+
+    
+    dcc.Tabs(id="tabs-main", value='tab-intro', children=[
+        dcc.Tab(label='Introduction', value='tab-intro'),
+        dcc.Tab(label='Exercise Types', value='tab-2-example'),
+        dcc.Tab(label='Walking Calories', value='tab-3-example'),
+        dcc.Tab(label='Trend Analysis', value='trends'),
+        dcc.Tab(label='DropDown', value='tab-4')
+        ]),
+    html.Div(id='tabs-content-example')
+    
+    
+])
+
+@app.callback(Output('tabs-content-example', 'children'),
+              [Input('tabs-main', 'value')] )
+
+def render_content(tab):
+
+    if tab == 'tab-2-example':
+        return tab_2_layout
+
+    elif tab == 'tab-3-example':
+        return tab_3_layout
+
+    elif tab == 'trends':
+        return trends_layout
+    
+    elif tab == 'tab-4':
+        return tab_4_layout
+    
+    elif tab == 'tab-intro':
+        return tab_introduction.tab_about_layout
 
 markdown_text = '''
 ### Dash and Markdown
@@ -128,57 +165,8 @@ colors = {
     'background': '#111111',
     'text': '#7FDBFF'
 }
-# dropdown options
-
-#opts = [{'label' : i, 'value' : i} for i in features]
-#features = merged_sleep_exercise.columns[[2,3,4,6,8]]
-#labels=['Calorie (cal)','Exercise Duration (min)','Time Offset','Sleep Efficiency (%)','Sleep Duration (min)']
-
-#Date chooser
-#merged_sleep_exercise['start_date'] = pd.to_datetime(merged_sleep_exercise['start_date'], format='%Y-%m-%d')
-
-# Step 3. Create a plotly figure
 
 
-# Step 4. Create a Dash layout
-app.layout = html.Div([
-    html.Div([
-        html.H1('Health Data Analysis'),
-        html.P('By: Kshitij Mamgain')],style = {'padding' : '50px' ,'backgroundColor' : '#3aaab2'}),
-
-    
-    dcc.Tabs(id="tabs-example", value='tab-2-example', children=[
-        dcc.Tab(label='Exercise Types', value='tab-2-example'),
-        dcc.Tab(label='Walking Calories', value='tab-3-example'),
-        dcc.Tab(label='Dash', value='tab-1-example'),
-        dcc.Tab(label='DropDown', value='tab-4')
-        ]),
-    html.Div(id='tabs-content-example')
-    
-    
-])
-
-
-
-@app.callback(Output('tabs-content-example', 'children'),
-              [Input('tabs-example', 'value')]
-              
-              )
-
-
-def render_content(tab):
-
-    if tab == 'tab-2-example':
-        return tab_2_layout
-
-    elif tab == 'tab-3-example':
-        return tab_3_layout
-
-    elif tab == 'tab-1-example':
-        return tab_1_layout
-    
-    elif tab == 'tab-4':
-        return tab_4_layout
 
 tab_4_layout = html.Div([
 
@@ -192,7 +180,7 @@ tab_4_layout = html.Div([
         html.Div(id='output_data'),
         html.Br(),
 
-        html.Label(['Choose column:'],style={'font-weight': 'bold', "text-align": "center"}),
+        html.Label(['Pick a day:'],style={'font-weight': 'bold', "text-align": "center"}),
 
         dcc.Dropdown(id='my_dropdown',
             options=[
@@ -208,7 +196,7 @@ tab_4_layout = html.Div([
             optionHeight=35,                    #height/space between dropdown options
             value='Total',                    #dropdown value selected automatically when page loads
             disabled=False,                     #disable dropdown value selection
-            multi=True,                        #allow multiple dropdown values to be selected
+            multi=False,                        #allow multiple dropdown values to be selected
             searchable=True,                    #allow user-searching of dropdown values
             search_value='',                    #remembers the value searched in dropdown
             placeholder='Please select...',     #gray, default text shown when no option is selected
@@ -248,7 +236,7 @@ def build_graph(column_chosen):
                       'font':{'size':28},'x':0.5,'xanchor':'center'})
     return fig
 
-tab_1_layout = html.Div(children=[
+trends_layout = html.Div(children=[
     html.H1(children='Hello Dash1'),
 
     html.Div(children='''
@@ -323,7 +311,7 @@ tab_1_layout = html.Div(children=[
         )
     ])
 
-])
+],className='nine columns')
 
 
 tab_2_layout = html.Div([
