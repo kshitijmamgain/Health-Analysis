@@ -7,15 +7,17 @@ import plotly.figure_factory as ff
 from dash.dependencies import Input, Output
 from datetime import datetime as dt
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 from flask import Flask
 from preprocess import (dt_object, offset, sleep_preprocess, heart_preprocess, step_preprocess, stress_preprocess, 
-                            floors_preprocess, exercise_preprocess)
+                            floors_preprocess, exercise_preprocess, stepcount_preprocess)
 import glob
 import os
 from datetime import datetime
 from datetime import timedelta
-from datetime import date
-import tab_introduction
+#from datetime import date
+import tab_introduction, tab_daily
+from src import utils, dash_components
 #os.chdir('datasets')
 file = glob.glob(r'datasets\*')
 file_list = []
@@ -38,6 +40,7 @@ step_daily_trend_df = step_preprocess(step_daily_trend_df)
 stress_df = stress_preprocess(stress_df)
 floors_climbed_df = floors_preprocess(floors_climbed_df)
 Exercise_df = exercise_preprocess(Exercise_df)
+step_count_df = stepcount_preprocess(step_count_df)
 
 sleep_duration = [c for c in sleep_df['sleep_duration']]
 day_nap = list(sleep_df[(sleep_df.waking_hour >= 10) &(sleep_df.waking_hour <= 19)]['sleep_duration'])
@@ -53,49 +56,50 @@ server = app.server
 app.layout = html.Div([
     html.Div([
         html.H1('Health Data Analysis'),
-        html.P('By: Kshitij Mamgain')],style = {'padding' : '50px' ,'backgroundColor' : '#009dc4'}),
+        html.H4('Designed by: Kshitij Mamgain',style ={'textAlign':'center','color': "#ffffff"})
+        ],style = {'padding' : '50px' ,'backgroundColor' : '#009dc4'}),
 
     
     dcc.Tabs(id="tabs-main", value='tab-intro', children=[
         dcc.Tab(label='Introduction', value='tab-intro'),
-        dcc.Tab(label='Exercise Types', value='tab-2-example'),
-        dcc.Tab(label='Walking Calories', value='tab-3-example'),
+        dcc.Tab(label='Daily Analysis', value='tab-daily'),
         dcc.Tab(label='Trend Analysis', value='trends'),
-        dcc.Tab(label='DropDown', value='tab-4')
         ]),
-    html.Div(id='tabs-content-example')
+    html.Div(id='tabs-contents')
     
     
 ])
 
-@app.callback(Output('tabs-content-example', 'children'),
+@app.callback(Output('tabs-contents', 'children'),
               [Input('tabs-main', 'value')] )
 
 def render_content(tab):
 
-    if tab == 'tab-2-example':
-        return tab_2_layout
-
-    elif tab == 'tab-3-example':
-        return tab_3_layout
+    if tab == 'tab-daily':
+        return tab_daily.tab_daily_layout
 
     elif tab == 'trends':
         return trends_layout
     
-    elif tab == 'tab-4':
-        return tab_4_layout
-    
     elif tab == 'tab-intro':
         return tab_introduction.tab_about_layout
 
-markdown_text = '''
-### Dash and Markdown
 
-Dash apps can be written in Markdown.
-Dash uses the [CommonMark](http://commonmark.org/)
-specification of Markdown.
-Check out their [60 Second Markdown Tutorial](http://commonmark.org/help/)
-if this is your first introduction to Markdown!
+
+markdown_text = '''
+### Explanation
+
+This dashboard extracts data from various data sources and presents the daily lifestyle of the individual.  
+1. __Select__ a date ranging from 5th April 2019 to 5th May 2019.  
+2. __Pie Chart__ presents the  _univariate_ analysis of the time spent on exercise.  
+3. __Bar Plot__ presents _bivariate_ analysis of the calories burnt on each exercise.  
+4. __Dual Plot__ presents the health status with shaded region indicating sleep pattern, and lines represent the heart rate and steps during a day. The x-axis is time-scale for each day. The _slider_ lets on zoom on each section.  
+
+###### Technical Details
+1. Information was extracted from four dataframes - sleep, exercise, heart rate and step count using _pandas and datetime_ modules.
+2. Three subplots were created to plot 3 graphs together.
+3. The range slider and date picker components were used from _plotly_ module.
+
 '''
 # Step 2. Import the dataset
 # Figure Distplot
@@ -128,209 +132,124 @@ fig3.update_layout(
     plot_bgcolor='rgb(243, 243, 243)',
     showlegend=True
 )
-# Add dropdown
-fig3.update_layout(
-    updatemenus=[
-        dict(
-            buttons=list([
-                dict(
-                    args=["notched", "True"],
-                    label="Notched",
-                    method="update"
-                ),
-                dict(
-                    args=["notched", False],
-                    label="Standard",
-                    method="update"
-                )
-            ]),
-            direction="down",
-            pad={"r": 10, "t": 10},
-            showactive=True,
-            x=0.1,
-            xanchor="left",
-            y=1.1,
-            yanchor="top"
-        ),
-    ]
-)
-# Add annotation
-fig3.update_layout(
-    annotations=[
-        dict(text="Boxplot :", showarrow=False,
-        x=0, y=1.05, yref="paper", align="left")
-    ]
-)
+
 colors = {
     'background': '#111111',
     'text': '#7FDBFF'
 }
 
-
-
-tab_4_layout = html.Div([
-
-    html.Div([
-        dcc.Graph(id='our_graph')
-    ],className='nine columns'),
-
-    html.Div([
-
-        html.Br(),
-        html.Div(id='output_data'),
-        html.Br(),
-
-        html.Label(['Pick a day:'],style={'font-weight': 'bold', "text-align": "center"}),
-
-        dcc.Dropdown(id='my_dropdown',
-            options=[
-                     {'label': 'Total', 'value': 'Total'},
-                     {'label': 'Monday', 'value':'Monday'},
-                     {'label': 'Tuesday', 'value':'Tuesday','disabled':False},
-                     {'label': 'Wednesday', 'value':'Wednesday'},
-                     {'label': 'Thursday', 'value':'Thursday'},
-                     {'label': 'Friday', 'value':'Friday'},
-                     {'label': 'Saturday', 'value':'Saturday'},
-                     {'label': 'Sunday', 'value':'Sunday'}
-            ],
-            optionHeight=35,                    #height/space between dropdown options
-            value='Total',                    #dropdown value selected automatically when page loads
-            disabled=False,                     #disable dropdown value selection
-            multi=False,                        #allow multiple dropdown values to be selected
-            searchable=True,                    #allow user-searching of dropdown values
-            search_value='',                    #remembers the value searched in dropdown
-            placeholder='Please select...',     #gray, default text shown when no option is selected
-            clearable=True,                     #allow user to removes the selected value
-            style={'width':"100%"},             #use dictionary to define CSS styles of your dropdown
-            # className='select_box',           #activate separate CSS document in assets folder
-            # persistence=True,                 #remembers dropdown value. Used with persistence_type
-            # persistence_type='memory'         #remembers dropdown value selected until...
-            ),                                  #'memory': browser tab is refreshed
-                                                #'session': browser tab is closed
-                                                #'local': browser cookies are deleted
-    ],className='three columns'),
-
+trends_layout = html.Div([
+    dcc.Tabs(id="tabs-trends", value='tab-sleep', children=[
+        dcc.Tab(label='Sleep Trend', value='tab-sleep'),
+        dcc.Tab(label='Exercise Trend', value='tab-exercise'),
+        ]),
+    html.Div(id='tabs-trends-content')    
 ])
 
-#---------------------------------------------------------------
-# Connecting the Dropdown values to the graph
-@app.callback(
-    Output(component_id='our_graph', component_property='figure'),
-    [Input(component_id='my_dropdown', component_property='value')]
-)
+@app.callback(Output('tabs-trends-content', 'children'),
+              [Input('tabs-trends', 'value')] )
 
-def build_graph(column_chosen):
-    
-    if column_chosen=='Total':
-        fig = px.bar(x=list(sleep_df.groupby(["waking_hour"]).mean().unstack().sleep_duration.index),
-                     y=list(sleep_df.groupby(["waking_hour"]).mean().unstack().sleep_duration.values), 
-                     labels={'x':'Hour of day', 'y':'Average sleeping hours'})
-    else:
-        fig = px.bar(x=list(sleep_df.groupby(["waking_hour","weekday"]).mean().unstack().sleep_duration[column_chosen].index),
-                     y=list(sleep_df.groupby(["waking_hour","weekday"]).mean().unstack().sleep_duration[column_chosen].values), 
-                     labels={'x':'Hour of day', 'y':'Average sleeping hours'})
-        
-    
-    #fig.update_traces(textinfo='percent+label')
-    fig.update_layout(title={'text':'Day-wise Sleeping Pattern',
-                      'font':{'size':28},'x':0.5,'xanchor':'center'})
-    return fig
+def render_trend_content(tab):
 
-trends_layout = html.Div(children=[
-    html.H1(children='Hello Dash1'),
+    if tab == 'tab-sleep':
+        return trends_layout1
+
+    elif tab == 'tab-exercise':
+        return trends_layout2
+
+trends_layout1 = html.Div(children=[
+    html.H3(children='Bar Plot Summary'),
 
     html.Div(children='''
         Dash: A web application framework for Python.
     '''),
 
-    dcc.Graph(
-        id='example-graph',
-        figure={
-            'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-            ],
-            'layout': {
-                'title': 'Dash Data Visualization'
-            }
-        }
-    ),
-    
     html.Div([
-            dcc.Markdown(children=markdown_text)
-        ]),
+
+    html.Div([
+        dcc.Graph(id='our_graph')
+    ],className='nine columns'),
+
+    dash_components.daypicker,
+
+        
+]),
     
     html.Div(children=[
-        html.H1(
-            children='Hello Dash',
+        html.H3(
+            children='Box-plot Summary',
             style ={
             'textAlign':'center',
             'color': colors['text']
             }
            ),
 
-        html.Div(children='''
-            Dash: A web application framework for Python.
-        '''),
-
-        dcc.Graph(
-            id='example-graph-2',
-            figure={
-                'data': [
-                    {'x': [1, 3, 5], 'y': [4, 5, 2], 'type': 'bar', 'name': 'SF'},
-                    {'x': [1, 3, 5], 'y': [1, 3, 5], 'type': 'bar', 'name': u'Montréal'},
-                ],
-                'layout': {
-                    'title': 'Dash Data Visualization 2',
-                    'plot_bgcolor': colors['background'],
-                    'paper_bgcolor': colors['background'],
-                    'font': {
-                        'color': colors['text']
-                        }
-                }
-            }
-        )
-    ]),
-
-    html.Div(children=[
-        html.H1(
-            children='Hello Dash',
-            style ={
-            'textAlign':'center',
-            'color': colors['text']
-            }
-           ),
-
-        html.Div(children='''
-            Dash: A web application framework for Python.
+html.Div(children='''
+            
         '''),
 
         dcc.Graph(
             id='example-graph-3',
             figure=fig3
         )
-    ])
-
-],className='nine columns')
-
-
-tab_2_layout = html.Div([
-            html.H2('Calorie vs. Exercise Duration for each Exercise Type'),
-            html.P('This graph shows Calories used during each exercise type and its correlation with Exercise Duration. Also, distribution of Calories and Exercise Duration for each exercise type are shown. '),
-                dcc.Graph(id='graph-2-tabs',
-                figure = px.histogram(sleep_df, x="waking_hour", y="sleep_duration", color="weekday", hover_data=sleep_df.columns)         
-            )
-        ], style={"height" : "100vh", "width" : "75%"})
-
-tab_3_layout = html.Div([
-            html.H3('Calorie vs. Walking Duration and Average Spead'),
-            html.P('This graph shows correlation between Walking Duration and burnt Calories. Also, we can see the Average Walking Speed for each data point. Moreover, distribution of Calories and Walking Duration are shown. '),
+    ],className='nine columns'),
+html.Div([
+            html.H3('Distplot summary '),
+            html.P(' '),
                 dcc.Graph(id='graph-3-tabs',
                 figure = fig
 
             )
-        ])
+        ], className='nine columns')
 
+], className='rows')
+
+trends_layout2 = html.Div(children=[
+    html.H3(children='Bar Plot Summary'),
+
+    html.Div(children='''
+        Dash: A web application framework for Python.
+    '''),
+
+    html.Div([
+
+
+
+html.Div(children='''
+            
+        '''),
+
+        dcc.Graph(
+            id='example-graph-2',
+            figure=fig3
+        )
+    ],className='nine columns'),
+html.Div([
+            html.H3('Distplot summary '),
+            html.P(' '),
+                dcc.Graph(id='graph-2-tabs',
+                figure = fig
+
+            )
+        ], className='nine columns')
+
+], className='rows')
+#---------------------------------------------------------------
+# Connecting the Dropdown values to the graph
+@app.callback(
+    Output(component_id='our_graph', component_property='figure'),
+    [Input(component_id='weekday_dropdown', component_property='value')]
+)
+
+def build_graph(column_chosen):
+    return utils.dropdown_barplot(column_chosen)
+
+
+@app.callback(
+    Output('dashboard', 'figure'),
+    [Input('my-date-picker-single', 'date')])
+def health_dashboard(date):
+    return utils.dailygraph(date)
 
 
 if __name__ == '__main__':

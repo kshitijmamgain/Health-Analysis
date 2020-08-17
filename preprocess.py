@@ -167,6 +167,30 @@ def exercise_preprocess(Exercise_df):
     Exercise_df['weekday'] = Exercise_df['weekday'].map({0:"Monday", 1: "Tuesday", 2:"Wednesday",
                                                                       3:"Thursday",4:"Friday",5:"Saturday",
                                                                       6:"Sunday"})
-    order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"]
+    Exercise_df['start_date'] = [d.date() for d in Exercise_df['offset_starttime']]
     
     return Exercise_df
+def stepcount_preprocess(step_count_df):
+    step_count_df['start_time'] = pd.to_datetime(step_count_df['start_time'])
+    step_count_df['end_time'] = pd.to_datetime(step_count_df['end_time'])
+
+    step_count_df['offset_hour'] = (step_count_df.time_offset.str.split("C").str[1].astype(int))/100
+    oh = list(step_count_df['offset_hour'])
+
+    for i,val in enumerate(oh):
+        if val == 5.3:
+            oh[i] = 5.5
+        else:
+            pass
+
+    td = []
+
+    for hr in oh:
+        td.append(timedelta(hours = hr))
+
+    step_count_df['timedelta'] = td
+    step_count_df['offset_etime'] = step_count_df['end_time']+step_count_df['timedelta']
+    step_count_df['day_time'] = [d.time() for d in step_count_df.offset_etime]
+    step_count_df['day_hour'] = [d.strftime('%H') for d in step_count_df.day_time]
+    step_count_df['date'] =  [d.date() for d in step_count_df['offset_etime']]
+    return step_count_df
