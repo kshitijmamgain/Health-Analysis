@@ -156,7 +156,7 @@ def exercise_preprocess(Exercise_df):
     Exercise_df['start_time'] = pd.to_datetime(Exercise_df['start_time'])
     Exercise_df['end_time'] = pd.to_datetime(Exercise_df['end_time'])
     Exercise_df['offset_starttime']=offset(Exercise_df, 'time_offset', 'start_time')
-    Exercise_df['offset_endtime']=offset(Exercise_df, 'time_offset', 'end_time')
+    Exercise_df['offset_endtime']=offset( Exercise_df, 'time_offset', 'end_time')
     Exercise_df.exercise_type.value_counts()
     
     Exercise_df['exercise_type'] = Exercise_df['exercise_type'].map({1001:'Walking', 0: 'Custom', 14001:'Swiming',

@@ -42,11 +42,6 @@ floors_climbed_df = floors_preprocess(floors_climbed_df)
 Exercise_df = exercise_preprocess(Exercise_df)
 step_count_df = stepcount_preprocess(step_count_df)
 
-sleep_duration = [c for c in sleep_df['sleep_duration']]
-day_nap = list(sleep_df[(sleep_df.waking_hour >= 10) &(sleep_df.waking_hour <= 19)]['sleep_duration'])
-disturbed = list(sleep_df[sleep_df.Disrupted == True]['sleep_duration']) 
-
-
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.config['suppress_callback_exceptions'] = True
@@ -54,22 +49,20 @@ app.scripts.config.serve_locally = True
 server = app.server
 
 app.layout = html.Div([
-    html.Div([
-        html.H1('Health Data Analysis'),
-        html.H4('Designed by: Kshitij Mamgain',style ={'textAlign':'center','color': "#ffffff"})
-        ],style = {'padding' : '50px' ,'backgroundColor' : '#009dc4'}),
+        # header/title display
+        html.Div([
+            html.H1('Health Data Analysis'),
+            html.H4('Designed by: Kshitij Mamgain',style ={'textAlign':'center','color': "#ffffff"})],  
+            style = {'padding' : '50px' ,'backgroundColor' : '#009dc4'}),
+        # Define tabs    
+        dcc.Tabs(id="tabs-main", value='tab-intro', children=[
+            dcc.Tab(label='Introduction', value='tab-intro'),
+            dcc.Tab(label='Daily Analysis', value='tab-daily'),
+            dcc.Tab(label='Trend Analysis', value='trends'),]),
+        #define tabs call back id
+        html.Div(id='tabs-contents') ])
 
-    
-    dcc.Tabs(id="tabs-main", value='tab-intro', children=[
-        dcc.Tab(label='Introduction', value='tab-intro'),
-        dcc.Tab(label='Daily Analysis', value='tab-daily'),
-        dcc.Tab(label='Trend Analysis', value='trends'),
-        ]),
-    html.Div(id='tabs-contents')
-    
-    
-])
-
+#Tabs callback
 @app.callback(Output('tabs-contents', 'children'),
               [Input('tabs-main', 'value')] )
 
@@ -83,55 +76,6 @@ def render_content(tab):
     
     elif tab == 'tab-intro':
         return tab_introduction.tab_about_layout
-
-
-
-markdown_text = '''
-### Explanation
-
-This dashboard extracts data from various data sources and presents the daily lifestyle of the individual.  
-1. __Select__ a date ranging from 5th April 2019 to 5th May 2019.  
-2. __Pie Chart__ presents the  _univariate_ analysis of the time spent on exercise.  
-3. __Bar Plot__ presents _bivariate_ analysis of the calories burnt on each exercise.  
-4. __Dual Plot__ presents the health status with shaded region indicating sleep pattern, and lines represent the heart rate and steps during a day. The x-axis is time-scale for each day. The _slider_ lets on zoom on each section.  
-
-###### Technical Details
-1. Information was extracted from four dataframes - sleep, exercise, heart rate and step count using _pandas and datetime_ modules.
-2. Three subplots were created to plot 3 graphs together.
-3. The range slider and date picker components were used from _plotly_ module.
-
-'''
-# Step 2. Import the dataset
-# Figure Distplot
-fig = ff.create_distplot([sleep_duration, day_nap, disturbed], ['sleep duration', 'day nap', 'disrupted sleep'], bin_size=[.5, 1, 1], show_rug = False)
-fig.update_layout(title_text='Customized Distplot')
-
-
-# Figure Boxplot
-fig3 = px.box(sleep_df, x="weekday", y="efficiency", color="Disrupted",notched=True)
-#fig.update_traces(quartilemethod="exclusive") # or "inclusive", or "linear" by default
-fig3.update_layout(
-    title='Sleep efficiency during different days of the week',
-    yaxis=dict(
-        autorange=True,
-        showgrid=True,
-        zeroline=True,
-        dtick=5,
-        gridcolor='rgb(255, 255, 255)',
-        gridwidth=1,
-        zerolinecolor='rgb(255, 255, 255)',
-        zerolinewidth=2,
-    ),
-    margin=dict(
-        l=40,
-        r=30,
-        b=80,
-        t=100,
-    ),
-    paper_bgcolor='rgb(243, 243, 243)',
-    plot_bgcolor='rgb(243, 243, 243)',
-    showlegend=True
-)
 
 colors = {
     'background': '#111111',
@@ -158,89 +102,41 @@ def render_trend_content(tab):
         return trends_layout2
 
 trends_layout1 = html.Div(children=[
-    html.H3(children='Bar Plot Summary'),
-
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
-
-    html.Div([
-
-    html.Div([
-        dcc.Graph(id='our_graph')
-    ],className='nine columns'),
-
-    dash_components.daypicker,
-
-        
-]),
+                    html.H3(children='Bar Plot Summary'),
+                    html.Div(children='''Dash: A web application framework for Python.'''),
+                    
+                    html.Div([
+                        html.Div([dcc.Graph(id='our_graph')],className='nine columns'),
+                        dash_components.day_picker,]),
     
-    html.Div(children=[
-        html.H3(
-            children='Box-plot Summary',
-            style ={
-            'textAlign':'center',
-            'color': colors['text']
-            }
-           ),
+                    html.Div(children=[
+                        html.H3(children='Box-plot Summary',style ={'textAlign':'center','color': colors['text']}),
+                        html.Div(children=''''''),
+                        dcc.Graph(id='example-graph-3', figure=utils.boxplot())],className='nine columns'),
 
-html.Div(children='''
-            
-        '''),
+                    html.Div([
+                        html.H3('Distplot summary '),
+                        html.P(' '),
+                        dcc.Graph(id='graph-3-tabs', figure = utils.distplot())], className='nine columns')
 
-        dcc.Graph(
-            id='example-graph-3',
-            figure=fig3
-        )
-    ],className='nine columns'),
-html.Div([
-            html.H3('Distplot summary '),
-            html.P(' '),
-                dcc.Graph(id='graph-3-tabs',
-                figure = fig
-
-            )
-        ], className='nine columns')
-
-], className='rows')
+                ], className='rows')
 
 trends_layout2 = html.Div(children=[
-    html.H3(children='Bar Plot Summary'),
-
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
-
-    html.Div([
-
-
-
-html.Div(children='''
-            
-        '''),
-
-        dcc.Graph(
-            id='example-graph-2',
-            figure=fig3
-        )
-    ],className='nine columns'),
-html.Div([
-            html.H3('Distplot summary '),
-            html.P(' '),
-                dcc.Graph(id='graph-2-tabs',
-                figure = fig
-
-            )
-        ], className='nine columns')
-
-], className='rows')
+                    html.H3(children='Bar Plot Summary'),
+                    html.Div(children='''Dash: A web application framework for Python.'''),
+                    html.Div([
+                        html.Div(children=''''''),
+                        dcc.Graph(id='example-graph-2',figure=utils.boxplot())],className='nine columns'),
+                    html.Div([
+                        html.H3('Distplot summary '),
+                        html.P(' '),
+                        dcc.Graph(id='graph-2-tabs',figure = utils.distplot())], className='nine columns')
+                ], className='rows')
 #---------------------------------------------------------------
 # Connecting the Dropdown values to the graph
 @app.callback(
     Output(component_id='our_graph', component_property='figure'),
-    [Input(component_id='weekday_dropdown', component_property='value')]
-)
-
+    [Input(component_id='weekday_dropdown', component_property='value')])
 def build_graph(column_chosen):
     return utils.dropdown_barplot(column_chosen)
 
