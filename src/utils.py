@@ -118,11 +118,6 @@ def dailygraph(date):
         secondary_y=True, row=2, col=1
     )
     
-    # Add figure title
-    """fig.update_layout(
-        title_text='Heart rate and Step Count plot for : ' + str(dt)
-    )"""
-    
     # Set x-axis title
     fig.update_xaxes(title_text="Time on "+str(dt2), row=2, col=1)
     
@@ -136,76 +131,141 @@ def dailygraph(date):
       #shape regions
     t0,t1 = sleeppattern(dt2)
     
-    fig.add_shape(
-            type="rect",
-            # x-reference is assigned to the x-values
-            #xref="paper",
-            # y-reference is assigned to the plot paper [0,1]
-            #yref="paper",
-            x0=t0[0],
-            y0=0,
-            x1=t1[0],
-            y1=100,
-            fillcolor="LightSalmon",
-            opacity=0.5,
-            layer="below",
-            line_width=0,
-            row=2,col=1),
-    fig.add_shape(
-            type="rect",
-            # x-reference is assigned to the x-values
-            #xref="paper",
-            # y-reference is assigned to the plot paper [0,1]
-            #yref="paper",
-            x0=t0[1],
-            y0=0,
-            x1=t1[1],
-            y1=100,
-            fillcolor="LightSalmon",
-            opacity=0.5,
-            layer="below",
-            line_width=0,
-            row=2,col=1)
-    
-    
-    
-    
-    fig.update_layout(height=1050, width=1000,
-            title_text='<b> Daily Health Dashboard</b>'
-        )
+    fig.add_shape(type="rect", x0=t0[0], y0=0, x1=t1[0], y1=100, fillcolor="LightSalmon", opacity=0.5,
+                  layer="below", line_width=0, row=2,col=1),
+    fig.add_shape(type="rect", x0=t0[1], y0=0, x1=t1[1], y1=100, fillcolor="LightSalmon", opacity=0.5, 
+                  layer="below", line_width=0, row=2,col=1)
+
+    fig.update_layout(height=1050, width=1000, title_text='<b> Daily Health Dashboard</b>')
     return fig
 
-def dropdown_barplot(column_chosen):
-    if column_chosen=='Total':
-        fig = px.bar(x=list(sleep_df.groupby(["waking_hour"]).mean().unstack().sleep_duration.index),
-                     y=list(sleep_df.groupby(["waking_hour"]).mean().unstack().sleep_duration.values), 
-                     labels={'x':'Hour of day', 'y':'Average sleeping hours'})
-    else:
-        fig = px.bar(x=list(sleep_df.groupby(["waking_hour","weekday"]).mean().unstack().sleep_duration[column_chosen].index),
-                     y=list(sleep_df.groupby(["waking_hour","weekday"]).mean().unstack().sleep_duration[column_chosen].values), 
-                     labels={'x':'Hour of day', 'y':'Average sleeping hours'})
-        
+def dropdown_barplot(weekday,attribute):
+    if attribute == 'sleep':
+        df = sleep_df
+        xaxis = "waking_hour"
+        vals = "sleep_duration"
+        slabels={'x':'Hour of day', 'y':'Average sleeping hours'}
+        stitle ='Day-wise Sleeping Pattern'
     
+    elif attribute == 'exercise':
+        df = Exercise_df
+        xaxis = "exercise_type"
+        vals = "calorie"
+        slabels={'x':'Type of execise', 'y':'Average calories spent'}
+        stitle ='Day-wise Step Count Pattern'
+    
+    elif attribute == 'steps':
+        df = step_count_df
+        xaxis = "day_hour"
+        vals = "count"
+        slabels={'x':'Hour of day', 'y':'Average steps taken'}
+        stitle ='Day-wise Exercise Pattern'
+
+    else:# attribute == 'heart_rate':
+        df = heart_rate_df
+        xaxis = "day_hour"
+        vals = "heart_rate"
+        slabels={'x':'Hour of day', 'y':'Average heart beat rate'}
+        stitle ='Day-wise Heart Rate Pattern'
+
+    if weekday=='Total':
+        fig = px.bar(x=list(df.groupby([xaxis]).mean().unstack()[vals].index),
+                     y=list(df.groupby([xaxis]).mean().unstack()[vals].values), 
+                     labels=slabels)
+    else:
+        fig = px.bar(x=list(df.groupby([xaxis,"weekday"]).mean().unstack()[vals][weekday].index),
+                     y=list(df.groupby([xaxis,"weekday"]).mean().unstack()[vals][weekday].values), 
+                     labels=slabels)     
     #fig.update_traces(textinfo='percent+label')
-    fig.update_layout(title={'text':'Day-wise Sleeping Pattern',
+    fig.update_layout(title={'text':stitle,
                       'font':{'size':28},'x':0.5,'xanchor':'center'})
     return fig
 
-def distplot():
-    sleep_duration = [c for c in sleep_df['sleep_duration']]
-    day_nap = list(sleep_df[(sleep_df.waking_hour >= 10) &(sleep_df.waking_hour <= 19)]['sleep_duration'])
-    disturbed = list(sleep_df[sleep_df.Disrupted == True]['sleep_duration']) 
-    fig = ff.create_distplot([sleep_duration, day_nap, disturbed], ['sleep duration', 'day nap', 'disrupted sleep'], bin_size=[.5, 1, 1], show_rug = False)
-    fig.update_layout(title_text='Customized Distplot')
+def distplot(attribute):
+    
+    if attribute == 'sleep':
+        df = sleep_df
+        xaxis = "sleep_duration"
+        cols = "Disrupted"
+        vals = "efficiency"
+        slabels={'sleep_duration':'Sleep Duration (hrs)', 'efficiency':'Sleep Efficiency (%)'}
+        stitle ='Density Contour for Sleep Efficiency'
+    
+    elif attribute == 'exercise':
+        df = Exercise_df[(Exercise_df.exercise_type=='Custom')|(Exercise_df.exercise_type=='Swimming')|
+                            (Exercise_df.exercise_type=='Cycling')|(Exercise_df.exercise_type=='Running')]
+        xaxis = "duration"
+        vals = "calorie"
+        cols = "exercise_type"
+        slabels={'duration':'Time Spent on Exercise (mins)', 'calorie':'Calories Spent (cal)', 'exercise_type': 'Exercise Type'}
+        stitle ='Density Contour for Exercise'
+    
+    elif attribute == 'steps':
+        df = step_count_df
+        xaxis = "distance"
+        vals = "calorie"
+        cols = None
+        slabels={'distance':'Distance Covered (m)', 'calorie':'Calories Spent (cal)'}
+        stitle ='Density Conour for Step Count'
+    
+    else:# attribute == 'heart_rate':
+        df = heart_rate_df
+        xaxis = "day_hour"
+        vals = "heart_rate"
+        cols = None
+        slabels={'day_hour':'Day Time (hrs)', 'heart_rate':'Heart Rate (bpm)'}
+        stitle ='Density Contour for Heart Rate'
+    
+    fig = px.density_contour(df, x=xaxis, y=vals, color=cols,labels=slabels)
+    fig.update_layout(title={'text':stitle, 'font':{'size':28},'x':0.5,'xanchor':'center'},
+                      yaxis=dict(autorange=True, showgrid=True, zeroline=True, nticks=10, gridcolor='rgb(255, 255, 255)',
+                      gridwidth=1, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),xaxis=dict(nticks=10),
+                      margin=dict(l=40, r=30, b=80,t=100,), paper_bgcolor='rgb(243, 243, 243)', plot_bgcolor='rgb(243, 243, 243)',
+                      showlegend=True)
     return fig
 
-def boxplot():
+def boxplot(attribute, view='T'):
+    typ = True if view=='T' else False
+    if attribute == 'sleep':
+        df = sleep_df
+        xaxis = "weekday"
+        cols = "Disrupted"
+        vals = "sleep_duration"
+        slabels={"weekday":'Distribution over days of week', 'sleep_duration':'Sleep Duration (hrs)'}
+        stitle ='Sleep efficiency during different days of the week'
+    
+    elif attribute == 'exercise':
+        df = Exercise_df[(Exercise_df.exercise_type=='Custom')|(Exercise_df.exercise_type=='Swimming')|
+                            (Exercise_df.exercise_type=='Cycling')|(Exercise_df.exercise_type=='Running')]
+        xaxis = "weekday"
+        vals = "calorie"
+        cols = "exercise_type"
+        slabels={"weekday":'Distribution over days of week', 'calorie':'Calories Spent (cal)','exercise_type': 'Exercise Type'}
+        stitle ='Calories burnt during different days of the week'
+    
+    elif attribute == 'steps':
+        df = step_count_df
+        xaxis = "weekday"
+        vals = "distance"
+        cols = None
+        slabels={"weekday":'Distribution over days of week', 'distance':'Distance Covered Walking (m)'}
+        stitle ='Step count during different days of the week'
+    
+    else:# attribute == 'heart_rate':
+        df = heart_rate_df
+        xaxis = "weekday"
+        vals = "heart_rate"
+        cols = None
+        slabels={"weekday":'Distribution over days of week', 'heart_rate':'Heart Rate (bpm)'}
+        stitle ='Heart beat during different days of the week'    
     # Figure Boxplot
-    fig = px.box(sleep_df, x="weekday", y="efficiency", color="Disrupted",notched=True)
-    #fig.update_traces(quartilemethod="exclusive") # or "inclusive", or "linear" by default
-    fig.update_layout(title='Sleep efficiency during different days of the week',
-        yaxis=dict(autorange=True, showgrid=True, zeroline=True, dtick=5, gridcolor='rgb(255, 255, 255)',
-            gridwidth=1, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-        margin=dict(l=40, r=30, b=80,t=100,), paper_bgcolor='rgb(243, 243, 243)', plot_bgcolor='rgb(243, 243, 243)',
-        showlegend=True)
+    weekday_order = {"weekday": ["Monday", "Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]}
+    fig = px.box(df, x=xaxis, y=vals, color=cols,notched=typ, category_orders=weekday_order,
+                 points='suspectedoutliers',labels=slabels)
+
+    fig.update_layout(title={'text':stitle, 'font':{'size':28},'x':0.5,'xanchor':'center'},
+                      yaxis=dict(autorange=True, showgrid=True, zeroline=True, nticks=5, gridcolor='rgb(255, 255, 255)',
+                      gridwidth=1, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
+                      margin=dict(l=40, r=30, b=80,t=100,), paper_bgcolor='rgb(243, 243, 243)', plot_bgcolor='rgb(243, 243, 243)',
+                      showlegend=True)
     return fig

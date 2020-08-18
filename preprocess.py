@@ -118,7 +118,10 @@ def heart_preprocess(heart_rate_df):
         td.append(timedelta(hours = hr))
     heart_rdf['delta_time'] = td
     heart_rdf['adjusted_time'] = heart_rdf['end_time']+heart_rdf['delta_time']
-    
+    heart_rdf['weekday'] = [day.weekday() for day in heart_rdf['adjusted_time']]
+    heart_rdf['weekday'] = heart_rdf['weekday'].map({0:"Monday", 1: "Tuesday", 2:"Wednesday",
+                                                     3:"Thursday",4:"Friday",5:"Saturday", 6:"Sunday"})
+    heart_rdf['day_hour'] = heart_rdf.apply(lambda a: a['adjusted_time'].time().hour, axis =1)
     return heart_rdf
 
 def step_preprocess(df):
@@ -159,7 +162,7 @@ def exercise_preprocess(Exercise_df):
     Exercise_df['offset_endtime']=offset( Exercise_df, 'time_offset', 'end_time')
     Exercise_df.exercise_type.value_counts()
     
-    Exercise_df['exercise_type'] = Exercise_df['exercise_type'].map({1001:'Walking', 0: 'Custom', 14001:'Swiming',
+    Exercise_df['exercise_type'] = Exercise_df['exercise_type'].map({1001:'Walking', 0: 'Custom', 14001:'Swimming',
                                                                       11007:'Cycling',1002:'Running',9002:'Yoga',
                                                                       13001:'Hiking',15006:'Elliptical Trainer'})
     Exercise_df['weekday'] = Exercise_df.apply(lambda x: x['offset_endtime'].weekday(), axis =1)
@@ -193,4 +196,8 @@ def stepcount_preprocess(step_count_df):
     step_count_df['day_time'] = [d.time() for d in step_count_df.offset_etime]
     step_count_df['day_hour'] = [d.strftime('%H') for d in step_count_df.day_time]
     step_count_df['date'] =  [d.date() for d in step_count_df['offset_etime']]
+    step_count_df['weekday']= step_count_df.apply(lambda x: x['start_time'].weekday(), axis =1)
+    step_count_df['weekday'] = step_count_df['weekday'].map({0:"Monday", 1: "Tuesday", 2:"Wednesday",
+                                                                      3:"Thursday",4:"Friday",5:"Saturday",
+                                                                      6:"Sunday"})    
     return step_count_df

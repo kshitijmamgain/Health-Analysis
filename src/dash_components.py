@@ -40,7 +40,7 @@ day_picker = html.Div([
 data_picker = html.Div([
 
         html.Br(),
-        html.Div(id='output_data'),
+        html.Div(id='output_data1'),
         html.Br(),
 
         html.Label(['Attribute'],style={'font-weight': 'bold', "text-align": "center"}),
@@ -50,10 +50,27 @@ data_picker = html.Div([
                      {'label': 'Sleep', 'value': 'sleep'},
                      {'label': 'Exercise', 'value':'exercise'},
                      {'label': 'Heart Rate', 'value':'heart_rate','disabled':False},
-                     {'label': 'Step Counts', 'value':'steps'},
-                     {'label': 'Stress', 'value':'stress'}
+                     {'label': 'Step Counts', 'value':'steps'}
             ],
-            optionHeight=35, value='Sleep', disabled=False, multi=False, searchable=True, search_value='',                    #remembers the value searched in dropdown
+            optionHeight=35, value='sleep', disabled=False, multi=False, searchable=True, search_value='',                    #remembers the value searched in dropdown
+            placeholder='Please select...', clearable=True, style={'width':"100%"}, 
+            ),                                  
+    ],className='three columns')
+
+boxPlotOptions = html.Div([
+
+        html.Br(),
+        html.Div(id='output_data2'),
+        html.Br(),
+
+        html.Label(['Boxplot View'],style={'font-weight': 'bold', "text-align": "center"}),
+
+        dcc.Dropdown(id='view_dropdown',
+            options=[
+                     {'label': 'Standard', 'value': 'F'},
+                     {'label': 'Notched', 'value':'T'},
+            ],
+            optionHeight=35, value='T', disabled=False, multi=False, searchable=True, search_value='',                    #remembers the value searched in dropdown
             placeholder='Please select...', clearable=True, style={'width':"100%"}, 
             ),                                  
     ],className='three columns')

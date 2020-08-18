@@ -77,76 +77,73 @@ def render_content(tab):
     elif tab == 'tab-intro':
         return tab_introduction.tab_about_layout
 
-colors = {
-    'background': '#111111',
-    'text': '#7FDBFF'
-}
-
-trends_layout = html.Div([
-    dcc.Tabs(id="tabs-trends", value='tab-sleep', children=[
-        dcc.Tab(label='Sleep Trend', value='tab-sleep'),
-        dcc.Tab(label='Exercise Trend', value='tab-exercise'),
-        ]),
-    html.Div(id='tabs-trends-content')    
-])
-
-@app.callback(Output('tabs-trends-content', 'children'),
-              [Input('tabs-trends', 'value')] )
-
-def render_trend_content(tab):
-
-    if tab == 'tab-sleep':
-        return trends_layout1
-
-    elif tab == 'tab-exercise':
-        return trends_layout2
-
-trends_layout1 = html.Div(children=[
-                    html.H3(children='Bar Plot Summary'),
-                    html.Div(children='''Dash: A web application framework for Python.'''),
-                    
-                    html.Div([
-                        html.Div([dcc.Graph(id='our_graph')],className='nine columns'),
-                        dash_components.day_picker,]),
-    
-                    html.Div(children=[
-                        html.H3(children='Box-plot Summary',style ={'textAlign':'center','color': colors['text']}),
-                        html.Div(children=''''''),
-                        dcc.Graph(id='example-graph-3', figure=utils.boxplot())],className='nine columns'),
-
-                    html.Div([
-                        html.H3('Distplot summary '),
-                        html.P(' '),
-                        dcc.Graph(id='graph-3-tabs', figure = utils.distplot())], className='nine columns')
-
-                ], className='rows')
-
-trends_layout2 = html.Div(children=[
-                    html.H3(children='Bar Plot Summary'),
-                    html.Div(children='''Dash: A web application framework for Python.'''),
-                    html.Div([
-                        html.Div(children=''''''),
-                        dcc.Graph(id='example-graph-2',figure=utils.boxplot())],className='nine columns'),
-                    html.Div([
-                        html.H3('Distplot summary '),
-                        html.P(' '),
-                        dcc.Graph(id='graph-2-tabs',figure = utils.distplot())], className='nine columns')
-                ], className='rows')
 #---------------------------------------------------------------
-# Connecting the Dropdown values to the graph
-@app.callback(
-    Output(component_id='our_graph', component_property='figure'),
-    [Input(component_id='weekday_dropdown', component_property='value')])
-def build_graph(column_chosen):
-    return utils.dropdown_barplot(column_chosen)
-
-
+# Connecting the tab_daily_layout with the graph
+#---------------------------------------------------------------
 @app.callback(
     Output('dashboard', 'figure'),
     [Input('my-date-picker-single', 'date')])
 def health_dashboard(date):
     return utils.dailygraph(date)
 
+colors = {
+    'background': '#111111',
+    'text': '#7FDBFF'
+}
+
+trends_layout = html.Div(children=[
+                    html.Div([
+                        html.Div([
+                            html.H1("Trends Analysis on different Indicators"),],className='nine columns'), 
+                            dash_components.data_picker]),
+                                        
+                    html.Div([
+                        html.H3(children='Bar Plot Summary'),
+                        html.Div(children='''Dash: A web application framework for Python.'''),
+                        html.Div([dcc.Graph(id='bar_graph')],className='nine columns'),
+                        dash_components.day_picker]),
+    
+                    html.Div(children=[
+                        html.H3(children='Box-plot Summary',style ={'textAlign':'center','color': colors['text']}),
+                        html.Div(children=''''''),
+                        html.Div([dcc.Graph(id='boxplot-graph')],className='nine columns'),
+                        dash_components.boxPlotOptions]),
+
+                    html.Div([
+                        html.H3('Distplot summary '),
+                        html.P(' '),
+                        dcc.Graph(id='distplot-graph')], className='nine columns')
+
+                ], className='rows')
+
+#---------------------------------------------------------------
+# Connecting the Dropdown values to the bar graph
+@app.callback(
+    Output(component_id='bar_graph', component_property='figure'),
+    [Input(component_id='weekday_dropdown', component_property='value'),
+     Input(component_id='attribute_dropdown', component_property='value')])
+def build_bar_graph(weekday,attribute):
+
+    return utils.dropdown_barplot(weekday, attribute)
+
+#---------------------------------------------------------------
+# Connecting the Dropdown values to the boxplot graph
+@app.callback(
+    Output(component_id='boxplot-graph', component_property='figure'),
+    [Input(component_id='attribute_dropdown', component_property='value'),
+     Input(component_id='view_dropdown', component_property='value')])
+def build_boxplot_graph(attribute, view):
+    print(attribute)
+    return utils.boxplot(attribute,view)
+
+#---------------------------------------------------------------
+# Connecting the Dropdown values to the density plot graph
+@app.callback(
+    Output(component_id='distplot-graph', component_property='figure'),
+    [Input(component_id='attribute_dropdown', component_property='value')])
+def build_distplot_graph(attribute):
+    print(attribute)
+    return utils.distplot(attribute)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
