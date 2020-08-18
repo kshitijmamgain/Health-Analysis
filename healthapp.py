@@ -1,3 +1,4 @@
+import dash
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
@@ -70,4 +71,5 @@ def build_distgraph(attribute):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
+    #app.run_server(debug=True)

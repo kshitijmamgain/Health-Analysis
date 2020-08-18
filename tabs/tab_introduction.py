@@ -38,7 +38,7 @@ tab_about_layout = html.Div([
   html.Div([  
     html.Div([
                 dcc.Markdown(children=intro_text, style={'marginLeft': '3em', 'marginTop': '5em'})
-              ], className = "six columns"),
+              ], className = "seven columns"),
               
     #Right panel.
     
@@ -51,7 +51,7 @@ tab_about_layout = html.Div([
                     
                     """
                 )
-            ], style={'marginTop': '3em'}, className="six columns"),
+            ], style={'marginTop': '3em'}, className="five columns"),
      
         ], className="row")
 ])
