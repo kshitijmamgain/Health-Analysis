@@ -1,5 +1,5 @@
 # Health-Analysis
-__Deployed at [(dash-health-app.herokuapp)][https://dash-health-app.herokuapp.com/]__
+__Deployed at [dash-health-app.herokuapp](https://dash-health-app.herokuapp.com/)__
 Samsung health data analysis
 Python provides powerful tools to analyze time series data. I have tried to analyze health data of an individual. The data has been taken from a samsung user. The provided datasets would come under 3 classes defined by Samsung:<br>
 
@@ -12,6 +12,7 @@ The schema of the project would be:
   
 #### Data Preprocessing  
 Data Collecting, Cleaning, Transforming, Imputing  
+  
 #### Data Trend Analysis  
 i. Sleep Trends  
 ii. Exercise Trends  
