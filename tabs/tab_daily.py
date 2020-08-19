@@ -18,28 +18,20 @@ This dashboard extracts data from various data sources and presents the daily li
 '''
 
 tab_daily_layout = html.Div([
-            html.H2('Daily Routine Analsis'),
-            html.P('This graph shows day wise composite information on various user level data. '),
-            html.Div([
+                        html.H1('Daily Routine Analsis'),
+                        html.P('This graph shows day wise composite information on various user level data.'),
+                        html.Div([
+                            html.Div([
+                                    html.Div([dcc.DatePickerSingle(
+                                        id='my-date-picker-single',
+                                        min_date_allowed=datetime(2019, 4, 5),
+                                        max_date_allowed=datetime(2019, 5, 5),
+                                        initial_visible_month=datetime(2019, 4, 15),
+                                        date=datetime(2019,4,15)),
+                                        dcc.Graph(id='dashboard')
+                                        ])],className='nine columns'),
 
-            html.Div([
-                
-            html.Div([
-            dcc.DatePickerSingle(
-            id='my-date-picker-single',
-            min_date_allowed=datetime(2019, 4, 5),
-            max_date_allowed=datetime(2019, 5, 5),
-            initial_visible_month=datetime(2019, 4, 15),
-            date=datetime(2019,4,15)
-    ),
-    dcc.Graph(id='dashboard')
-])
-
-        ],className='nine columns'),
-
-           html.Div([
-            dcc.Markdown(children=markdown_text)
-        ], className='three columns') 
-        
-        ])
-], className="row")
+                            html.Div([
+                                   dcc.Markdown(children=markdown_text)], className='three columns')
+                                        ])
+                                ], className="row")
