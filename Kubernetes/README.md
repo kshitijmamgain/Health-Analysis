@@ -37,10 +37,10 @@ kubectl expose deployment health-app --type=LoadBalancer --port 80 --target-port
 # get ip address
 kubectl get services
 ```
-The app was then available on external ip address.  
+The app was then available on external ip address.    
 5. I updated my deployment by pushing new image after editing deployment
 ```bash
 kubectl edit deployment health-app
 ```
-Which opens the deployment and we could make changes. I changed the replica and image tag to test which worked well.  
-5. The last step was to create CI/CD pipeline using Jenkins. I would explain this step in detail in my blog.
+Which opens the deployment and we could make changes. I changed the replica and image tag to test which worked well.    
+6. The last step was to create CI/CD pipeline using Jenkins. I would explain this step in detail in my blog.
