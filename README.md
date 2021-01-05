@@ -25,4 +25,4 @@ iii. Heart Rate Trends
 iv. Stress Trends  
 v. Step Counts Trends  
 #### Data Daily Analysis  
-i. Preparing a daily profile of the user using - step count, heart rate and sleep data<br>
+i. Preparing a daily profile of the user using - step count, heart rate and sleep data
